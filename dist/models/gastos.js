@@ -2,6 +2,11 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = require("mongoose");
 const GastosSchema = new mongoose_1.Schema({
+    item: {
+        type: Number,
+        require: true,
+        unique: true
+    },
     fecha: {
         type: String,
         required: true
@@ -14,7 +19,7 @@ const GastosSchema = new mongoose_1.Schema({
         type: Number,
         required: true
     },
-    estado: {
+    pago: {
         type: Boolean,
         required: true,
         default: false

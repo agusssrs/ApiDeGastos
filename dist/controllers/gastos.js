@@ -8,15 +8,26 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __rest = (this && this.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
+            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
+                t[p[i]] = s[p[i]];
+        }
+    return t;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.crearGasto = exports.getGastoByDate = exports.getGasto = void 0;
+exports.deleteGasto = exports.updateGasto = exports.crearGasto = exports.getGastoByDate = exports.getGasto = void 0;
 const gastos_1 = __importDefault(require("../models/gastos"));
 const getGasto = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const condition = {
-        estado: true
+        pago: false
     };
     const gasto = yield gastos_1.default.find(condition);
     res.json({
@@ -27,6 +38,12 @@ exports.getGasto = getGasto;
 const getGastoByDate = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { fecha } = req.params;
     const gasto = yield gastos_1.default.find({ fecha });
+    if (gasto.length === 0) {
+        res.json({
+            msg: 'No hiciste ningun gasto en esta fecha'
+        });
+        return;
+    }
     res.json({
         gasto
     });
@@ -34,7 +51,21 @@ const getGastoByDate = (req, res) => __awaiter(void 0, void 0, void 0, function*
 exports.getGastoByDate = getGastoByDate;
 const crearGasto = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const gastosData = req.body;
-    const gasto = new gastos_1.default(gastosData);
+    const { item, fecha, titulo, monto, pago } = gastosData;
+    if (!item || !fecha || !titulo || !monto) {
+        res.json({
+            msg: 'Faltan datos. Asegurate de escribir: Numero de item, fecha, titulo, monto, y si esta pago.'
+        });
+        return;
+    }
+    const itemEnDb = yield gastos_1.default.findOne({ item: item });
+    if (itemEnDb) {
+        res.json({
+            msg: 'Este numero de item ya esta usado. Por favor, elija otro.'
+        });
+        return;
+    }
+    const gasto = new gastos_1.default({ item, fecha, titulo, monto, pago });
     yield gasto.save();
     res.json({
         msg: "Tu gasto se guardo correctamente",
@@ -42,4 +73,35 @@ const crearGasto = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     });
 });
 exports.crearGasto = crearGasto;
+const updateGasto = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { item } = req.params;
+    const data = __rest(req.body, []);
+    const itemEnDb = yield gastos_1.default.findOne({ item: item });
+    if (!itemEnDb) {
+        res.json({
+            msg: 'No se ha encontrado este item'
+        });
+        return;
+    }
+    const gasto = yield gastos_1.default.findOneAndUpdate({ item: item }, data, { new: true });
+    res.json({
+        gasto
+    });
+});
+exports.updateGasto = updateGasto;
+const deleteGasto = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { item } = req.params;
+    const itemEnDb = yield gastos_1.default.findOne({ item: item });
+    if (!itemEnDb) {
+        res.json({
+            msg: 'No se ha encontrado este item'
+        });
+        return;
+    }
+    const gasto = yield gastos_1.default.findOneAndDelete({ item: item });
+    res.json({
+        gasto
+    });
+});
+exports.deleteGasto = deleteGasto;
 //# sourceMappingURL=gastos.js.map

@@ -1,13 +1,20 @@
 import { model, Model, Schema } from "mongoose"
 
 export interface GastosIn{
+    item: number,
     fecha: string,
     titulo: string,
     monto: number,
-    estado: boolean
+    pago: boolean
 }
 
 const GastosSchema = new Schema <GastosIn> ({
+    item: {
+        type: Number,
+        require:true,
+        unique:true
+    },
+
     fecha: {
         type: String,
         required: true
@@ -23,7 +30,7 @@ const GastosSchema = new Schema <GastosIn> ({
         required:true
     },
 
-    estado:{
+    pago:{
         type: Boolean,
         required: true,
         default: false
